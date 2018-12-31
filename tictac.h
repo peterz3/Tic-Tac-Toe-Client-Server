@@ -1,3 +1,5 @@
+#pragma once
+
 class tictac{
     public:
         void print();
