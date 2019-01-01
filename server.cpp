@@ -20,8 +20,12 @@ int main(int argc, char *argv[])
         std::cerr << "please specify a port number greater that 2000" << std::endl;
         exit(0);
     }
-    addrinfo hints, *res;
 
+    std::cout << "Enter you name" << std::endl;
+    std::string temp;
+    std::cin >> temp;
+
+    addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
 
     hints.ai_family = AF_UNSPEC;     // use IPv4 or IPv6, whichever
@@ -71,9 +75,6 @@ int main(int argc, char *argv[])
     std::cout << cli_ip << std::endl;
     const char *ptr_cli_ip = inet_ntop(AF_INET6, &client.sin6_addr, cli_ip, sizeof(cli_ip));
     std::cout << "recieve connection from(ipv6) " << cli_ip << std::endl;
-    std::cout << "Enter you name" << std::endl;
-    std::string temp;
-    std::cin >> temp;
     char cli_name[1024], serv_name[1024];
     strcpy(serv_name, temp.c_str());
     int bytes_recv = 0;
@@ -91,4 +92,7 @@ int main(int argc, char *argv[])
             std::cout << cli_name << " joined the game" << std::endl;
         }
     }
+    int bytes_send = send(newSockfd, &serv_name, sizeof(serv_name), 0);
+    if (bytes_send == -1)
+				std::cout<<"Could not SEND Player Data!"<<"Trying Again..."<<std::endl; 
 }
