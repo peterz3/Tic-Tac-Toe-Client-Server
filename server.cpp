@@ -50,18 +50,19 @@ int main(int argc, char *argv[])
         std::cerr << "Failed to bind" << std::endl;
         exit(1);
     }
-    std::cout << "server side binded " << std::endl;
+    std::cout << "server side binded, waiting for client " << std::endl;
 
     int listenfd;
     listenfd = listen(serverSide, BACKLOG);
-    if(listenfd != 0){
+    if (listenfd != 0)
+    {
         std::cerr << "couldn't listen from socket" << std::endl;
     }
 
     sockaddr_in6 client;
     socklen_t client_size = sizeof(client);
     int newSockfd = accept(serverSide, (sockaddr *)&client, &client_size);
-    if(newSockfd < 0)
+    if (newSockfd < 0)
     {
         std::cerr << "Error accepting request from client!" << std::endl;
         exit(1);
@@ -70,4 +71,24 @@ int main(int argc, char *argv[])
     std::cout << cli_ip << std::endl;
     const char *ptr_cli_ip = inet_ntop(AF_INET6, &client.sin6_addr, cli_ip, sizeof(cli_ip));
     std::cout << "recieve connection from(ipv6) " << cli_ip << std::endl;
+    std::cout << "Enter you name" << std::endl;
+    std::string temp;
+    std::cin >> temp;
+    char cli_name[1024], serv_name[1024];
+    strcpy(serv_name, temp.c_str());
+    int bytes_recv = 0;
+    while (bytes_recv == 0)
+    {
+        memset(&cli_name, 0, sizeof(cli_name));
+        bytes_recv = recv(newSockfd, &cli_name, sizeof(cli_name), 0);
+        if (bytes_recv == -1)
+        {
+            memset(&cli_name, 0, sizeof(cli_name));
+            std::cout << "Could not ACQUIRE Player Information!" << std::endl
+                      << "Trying again..." << std::endl;
+        }
+        else{
+            std::cout << cli_name << " joined the game" << std::endl;
+        }
+    }
 }
