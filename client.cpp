@@ -58,13 +58,17 @@ int main(int argc, char *argv[])
 
     std::cout << "established connection with server" << std::endl;
     char cli_name[1024], serv_name[1024];
-    int bytes_sent;
+    int bytes_sent = 0;
     strcpy(cli_name, temp.c_str());
     bytes_sent = send(clientSide, &cli_name, sizeof(cli_name), 0);
-    if (bytes_sent == -1)
+    while (bytes_sent == 0)
     {
-        std::cout << "PLAYER DATA NOT SENT!" << std::endl
-                  << "Trying Again...";
+        if (bytes_sent == -1)
+        {
+            std::cout << "PLAYER DATA NOT SENT!" << std::endl
+                      << "Trying Again...";
+            bytes_sent = 0;
+        }
     }
     int bytes_recv = 0;
     while (bytes_recv == 0)
@@ -73,10 +77,34 @@ int main(int argc, char *argv[])
         bytes_recv = recv(clientSide, &serv_name, sizeof(serv_name), 0);
         if (bytes_recv == -1)
         {
+            memset(serv_name, 0, sizeof(serv_name));
             std::cout << "COULD NOT ACQUIRE PLAYER INFORMATION!" << std::endl
                       << "Trying Again..." << std::endl;
+            bytes_recv = 0;
         }
     }
-    std::cout << "YOu have joined a game with  " << serv_name << std::endl;
+    std::cout << "You have joined a game with  " << serv_name << std::endl;
+    std::cout << "Please wait while " << serv_name << " does a coin flip" << std::endl;
+    bool serv_turn;
+    bytes_recv = 0;
+    while (bytes_recv == 0)
+    {
+        memset(&serv_turn, 0, sizeof(serv_turn));
+        bytes_recv = recv(clientSide, &serv_turn, sizeof(serv_turn), 0);
+        if (bytes_recv == -1)
+        {
+            memset(&serv_turn, 0, sizeof(serv_turn));
+            std::cout << "COULD NOT ACQUIRE PLAYER INFORMATION!" << std::endl
+                      << "Trying Again..." << std::endl;
+            bytes_recv = 0;
+        }
+    }
+    bool client_turn = !serv_turn;
+    if(client_turn){
+        std::cout << "You won the coin flip you will go first as X's" << std::endl;
+    }
+    else{
+        std::cout << "You lost the coin flip you will go second as O's" << std::endl;
+    }
     return 0;
 }
