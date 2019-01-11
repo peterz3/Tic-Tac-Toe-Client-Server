@@ -163,7 +163,6 @@ int main(int argc, char *argv[])
     {
         if (serv_turn)
         {
-            board.print();
             int col, row;
             while (1)
             {
@@ -178,14 +177,14 @@ int main(int argc, char *argv[])
             {
                 std::cout << "please input row coordinate from 0 to 2" << std::endl;
                 std::cin >> row;
-                if (row == 1 || row == 2 || row == 0)
+                if (row == 0 || row == 1 || row == 2)
                 {
                     break;
                 }
             }
             if (board.checkPos(row, col))
             {
-                board.setVal(cli_char, row, col);
+                board.setVal(serv_char, row, col);
                 move_buffer[0] = row;
                 move_buffer[1] = col;
                 bytes_sent = send(newSockfd, &move_buffer, sizeof(move_buffer), 0);
@@ -198,6 +197,7 @@ int main(int argc, char *argv[])
                         bytes_sent = 0;
                     }
                 }
+                board.print();
                 serv_turn = !serv_turn;
                 turn_count++;
             }
