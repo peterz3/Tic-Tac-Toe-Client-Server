@@ -35,8 +35,13 @@ void tictac::print(){
             std::cout << board[i][j] << "\t";
         }
     }
+    std::cout << std::endl;
 }
 
 void tictac::setVal(char val, int i, int j){
     board[i][j] = val;
+}
+
+bool tictac::checkPos(int i, int j){
+    return(board[i][j] == '-');
 }

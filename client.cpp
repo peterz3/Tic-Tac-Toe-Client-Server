@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "tictac.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
     std::cin >> temp;
 
     int status;
+    tictac board;
 
     char buf[1000];
 
@@ -100,11 +102,104 @@ int main(int argc, char *argv[])
         }
     }
     bool client_turn = !serv_turn;
-    if(client_turn){
+    char serv_char, cli_char;
+    if (client_turn)
+    {
         std::cout << "You won the coin flip you will go first as X's" << std::endl;
+        cli_char = 'x';
+        serv_char = 'o';
     }
-    else{
+    else
+    {
         std::cout << "You lost the coin flip you will go second as O's" << std::endl;
+        cli_char = 'o';
+        serv_char = 'x';
     }
+    int turn_count = 0;
+    int move_buffer[2];
+    memset(&move_buffer, 5, sizeof(move_buffer));
+    while (board.checkWin() == '-' || turn_count < 9)
+    {
+        if (client_turn)
+        {
+            board.print();
+            int col, row;
+            while (1)
+            {
+                std::cout << "please input col coordinate from 0 to 2" << std::endl;
+                std::cin >> col;
+                if (col == 1 || col == 2 || col == 0)
+                {
+                    break;
+                }
+            }
+            while (1)
+            {
+                std::cout << "please input row coordinate from 0 to 2" << std::endl;
+                std::cin >> row;
+                if (row == 1 || row == 2 || row == 0)
+                {
+                    break;
+                }
+            }
+            if (board.checkPos(row, col))
+            {
+                board.setVal(cli_char, row, col);
+                move_buffer[0] = row;
+                move_buffer[1] = col;
+                bytes_sent = send(clientSide, &move_buffer, sizeof(move_buffer), 0);
+                while (bytes_sent == 0)
+                {
+                    if (bytes_sent == -1)
+                    {
+                        std::cout << "PLAYER DATA NOT SENT!" << std::endl
+                                  << "Trying Again...";
+                        bytes_sent = 0;
+                    }
+                }
+                client_turn = !client_turn;
+                turn_count++;
+            }
+        }
+        else
+        {
+            bytes_recv = 0;
+            while (bytes_recv == 0)
+            {
+                memset(&move_buffer, 5, sizeof(move_buffer));
+                bytes_recv = recv(clientSide, &move_buffer, sizeof(move_buffer), 0);
+                if (bytes_recv == -1 || move_buffer[0] == 5 || move_buffer[1] == 5)
+                {
+                    memset(&move_buffer, 5, sizeof(move_buffer));
+                    std::cout << "COULD NOT ACQUIRE PLAYER INFORMATION!" << std::endl
+                              << "Trying Again..." << std::endl;
+                    bytes_recv = 0;
+                }
+            }
+            std::cout << "your opponent played with : " << std::endl;
+            board.setVal(serv_char, move_buffer[0], move_buffer[1]);
+            board.print();
+            client_turn = !client_turn;
+            turn_count++;
+        }
+    }
+    switch(board.checkWin()){
+        case '-':
+        std::cout << "no one won" << std::endl;
+
+        case 'x': 
+        if(serv_char == 'x'){ std::cout << serv_name <<" has won the game" << std::endl;
+        } 
+        else{
+            std::cout << cli_name <<" has won the game" << std::endl;
+        } 
+        case 'o':
+        if(serv_char == 'o'){ std::cout << serv_name <<" has won the game" << std::endl;
+        } 
+        else{
+            std::cout << cli_name <<" has won the game" << std::endl;
+        }
+    }
+
     return 0;
 }
